@@ -1,0 +1,87 @@
+-- =============================================
+-- 1. CREACIÓN DE LA ESTRUCTURA (MODELO E-R)
+-- =============================================
+CREATE DATABASE IF NOT EXISTS gestion_activos_db;
+USE gestion_activos_db;
+
+-- Tabla: Áreas / Dependencias
+CREATE TABLE areas (
+    id_area INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_area VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- Tabla: Clasificación de Información (Ley 1712)
+CREATE TABLE clasificaciones (
+    id_clasificacion INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_clasificacion VARCHAR(100) NOT NULL
+);
+
+-- Tabla: Categorías (Físico, Digital, etc.)
+CREATE TABLE categorias (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_categoria VARCHAR(100) NOT NULL
+);
+
+-- Tabla Principal: Activos de Información
+CREATE TABLE activos (
+    id_activo INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_activo VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    id_area INT,
+    id_categoria INT,
+    id_clasificacion INT,
+    formato_soporte VARCHAR(100),
+    FOREIGN KEY (id_area) REFERENCES areas(id_area),
+    FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria),
+    FOREIGN KEY (id_clasificacion) REFERENCES clasificaciones(id_clasificacion)
+);
+
+-- Tabla: Valoración de Seguridad (Tríada CID)
+CREATE TABLE valoracion_seguridad (
+    id_valoracion INT AUTO_INCREMENT PRIMARY KEY,
+    id_activo INT,
+    confidencialidad VARCHAR(20),
+    integridad VARCHAR(20),
+    disponibilidad VARCHAR(20),
+    FOREIGN KEY (id_activo) REFERENCES activos(id_activo) ON DELETE CASCADE
+);
+
+-- =============================================
+-- 2. CARGA DE DATOS MAESTROS (LIMPIOS)
+-- =============================================
+INSERT INTO areas (nombre_area) VALUES 
+('DIRECCIÓN GENERAL'), 
+('OFICINA ASESORA DE PLANEACIÓN'), 
+('SECRETARÍA GENERAL'), 
+('TALENTO HUMANO'), 
+('TECNOLOGÍA DE LA INFORMACIÓN'),
+('GESTIÓN DOCUMENTAL');
+
+INSERT INTO clasificaciones (tipo_clasificacion) VALUES 
+('PÚBLICA'), 
+('PÚBLICA CON RESERVA'), 
+('CLASIFICADA');
+
+INSERT INTO categorias (nombre_categoria) VALUES 
+('DOCUMENTO FÍSICO'), 
+('ARCHIVO DIGITAL'), 
+('BASE DE DATOS'), 
+('SOFTWARE / APLICATIVO');
+
+-- =============================================
+-- 3. CARGA DE ACTIVOS (EXTRAÍDOS DE TU ARCHIVO)
+-- =============================================
+INSERT INTO activos (nombre_activo, descripcion, id_area, id_categoria, id_clasificacion, formato_soporte) VALUES 
+('Registro de Correspondencia', 'Control de entrada y salida de documentos', 6, 2, 1, 'Excel/Software'),
+('Expedientes Laborales', 'Hojas de vida y soportes de empleados', 4, 1, 3, 'Papel/Físico'),
+('Base de Datos de Ciudadanos', 'Información de contacto y trámites', 5, 3, 2, 'Servidor SQL'),
+('Manual de Funciones', 'Documento normativo de la entidad', 2, 2, 1, 'PDF/Digital');
+
+-- =============================================
+-- 4. CARGA DE VALORACIONES
+-- =============================================
+INSERT INTO valoracion_seguridad (id_activo, confidencialidad, integridad, disponibilidad) VALUES 
+(1, 'Media', 'Alta', 'Media'),
+(2, 'Alta', 'Alta', 'Media'),
+(3, 'Alta', 'Alta', 'Alta'),
+(4, 'Baja', 'Media', 'Alta');

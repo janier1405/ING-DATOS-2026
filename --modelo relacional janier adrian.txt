@@ -1,0 +1,98 @@
+--modelo relacional
+
+CREATE DATABASE etl_activos;
+USE etl_activos;
+
+CREATE TABLE activos_informacion (
+    id_activo INT AUTO_INCREMENT
+    PRIMARY KEY,
+    codigo_categoria VARCHAR(50),
+    descripcion TEXT,
+    idioma VARCHAR(20),
+    medio_conservacion VARCHAR(50),
+    formato VARCHAR(50),
+    disponible VARCHAR(5),
+    ubicacion TEXT
+);
+
+
+--extraccion desde excel 
+
+import pandas as pd
+
+df = pd.read_excel("Registro_de_Activos_de_Información_vf.xlsx")
+
+# Limpieza de columnas
+df = df.drop(columns=["Información Publicada", "Subcategorías"])
+
+# Renombrar columnas
+df.columns = [
+    "codigo_categoria",
+    "descripcion",
+    "idioma",
+    "medio_conservacion",
+    "formato",
+    "disponible",
+    "ubicacion"
+]
+
+
+--carga a my SQL
+
+import mysql.connector
+
+conn = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="tu_password",
+    database="etl_activos"
+)
+
+cursor = conn.cursor()
+
+for _, row in df.iterrows():
+    cursor.execute("""
+        INSERT INTO activos_informacion
+        (codigo_categoria, descripcion, idioma, medio_conservacion, formato, disponible, ubicacion)
+        VALUES (%s,%s,%s,%s,%s,%s,%s)
+    """, tuple(row))
+
+conn.commit()
+
+
+
+--tranformacion logica ( valor academico)
+
+df["nivel_acceso"] = df["disponible"].apply(
+    lambda x: "RESTRINGIDO" if x == "SI" else "NO DISPONIBLE"
+)
+
+df["tipo_activo"] = "DOCUMENTAL"
+
+
+-- mongo DB carga-- documental 
+
+from pymongo import MongoClient
+
+client = MongoClient("mongodb://localhost:27017/")
+db = client["etl_activos"]
+collection = db["activos_documentales"]
+
+collection.insert_many(df.to_dict("records"))
+
+
+
+-- documnto final en mogo db
+
+{
+  "codigo_categoria": "AI-ASO-001",
+  "descripcion": "ASUNTOS TRANSVERSALES",
+  "idioma": "Español",
+  "medio_conservacion": "Digital",
+  "formato": "PDF, DOC, DOCX",
+  "disponible": "SI",
+  "ubicacion": "Y:\\VP_ComercialyServicio\\...",
+  "nivel_acceso": "RESTRINGIDO",
+  "tipo_activo": "DOCUMENTAL"
+}
+

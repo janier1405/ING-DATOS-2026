@@ -1,0 +1,16 @@
+SELECT 
+    a.nombre_activo AS 'Activo de Información',
+    ar.nombre_area AS 'Oficina Responsable',
+    v.confidencialidad AS 'Conf.',
+    v.integridad AS 'Int.',
+    v.disponibilidad AS 'Disp.',
+    -- Creamos una lógica simple para identificar activos críticos
+    CASE 
+        WHEN v.confidencialidad = 'Alta' AND v.disponibilidad = 'Alta' THEN 'CRÍTICO'
+        WHEN v.confidencialidad = 'Alta' OR v.integridad = 'Alta' THEN 'RIESGO ALTO'
+        ELSE 'ESTÁNDAR'
+    END AS 'Nivel de Riesgo'
+FROM activos a
+JOIN areas ar ON a.id_area = ar.id_area
+JOIN valoracion_seguridad v ON a.id_activo = v.id_activo
+ORDER BY v.confidencialidad DESC;
