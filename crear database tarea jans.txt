@@ -1,0 +1,35 @@
+create database tienda_online;
+USE tienda_online;
+
+
+create table productos (
+    id_producto INT primary key AUTO_INCREMENT,
+    nombre_producto VARCHAR(50) not null,
+    precio_producto DECIMAL(10,2) not null,
+    stock INT DEFAULT 0,
+    fecha_hora DATETIME not null default current CURRENT_TIMESTAMP
+);
+
+create table clientes (
+    id_cliente INT primary key AUTO_INCREMENT,
+    nombre_cliente VARCHAR(50) not null,
+    telefono VARCHAR(20)
+);
+
+create table pedidos (
+    id_pedido INT primary key AUTO_INCREMENT,
+    id_cliente INT not null,
+    fecha_pedido DATETIME not null default CURRENT_TIMESTAMP,
+    total DECIMAL(10,2) not null,
+    foreign (id_cliente) references clientes(id_cliente)
+);
+
+create table  detalle_pedidos (
+    id_detalle INT primary key AUTO_INCREMENT,
+    id_pedido INT not null,
+    id_producto INT not null,
+    cantidad INT not null,
+    precio_unitario DECIMAL(10,2) not null,
+    foreign key (id_pedido) references pedidos(id_pedido),
+    foreign key (id_producto) references productos(id_producto)
+);
