@@ -1,0 +1,81 @@
+/*
+janier adrian chindoy jamioy
+*/
+create database companiaseguros;
+use companiaseguros;
+
+create table compania(
+    idcompania varchar(50) primary key,
+    nit varchar(20) unique not null,
+    nombrecompania varchar(50) not null,
+    fechafundacion date null,
+    representantelegal varchar(50) not null
+);
+
+create table automovil (
+    idauto varchar(50) primary key,
+    marca varchar(50) not null,
+    modelo varchar(50) not null,
+    tipo varchar(50) not null,
+    anofabricacion int not null,
+    serialchasis varchar(50) not null,
+    pasajeros int not null,
+    cilindraje double not null
+);
+
+create table accidente(
+    idaccidente varchar(50) primary key,
+    fechaaccidente date not null,
+    lugar varchar(50) not null,
+    heridos int null,
+    fatalidades int null,
+    automotores int not null
+);
+
+create table seguros(
+    idseguro varchar(50) primary key,
+    estado varchar(20) not null,
+    costo double not null,
+    fechainicio date not null,
+    fechaexpiracion date not null,
+    valorasegurado double not null,
+    idcompaniafk varchar(50) not null,
+    idautomovilfk varchar(50) not null
+);
+
+create table detallesaccidente(
+    iddetalle int primary key,
+    idaccidentefk varchar(50) not null,
+    idautofk varchar(50) not null
+);
+
+alter table seguros
+add constraint fkcompaniaseguros
+foreign key (idcompaniafk)
+references compania(idcompania);
+
+alter table seguros
+add constraint fksegurosautomovil
+foreign key (idautomovilfk)
+references automovil(idauto);
+
+alter table detallesaccidente
+add constraint fkdetalleaccidente
+foreign key (idaccidentefk)
+references accidente(idaccidente);
+
+alter table detallesaccidente
+add constraint fkdetalleautomovil
+foreign key (idautofk)
+references automovil(idauto);
+
+alter table compania
+add direccioncompania varchar(50) not null;
+
+rename table automovil to carros;
+
+alter table seguros
+drop column valorasegurado;
+
+alter table seguros
+drop foreign key fksegurosautomovil;
