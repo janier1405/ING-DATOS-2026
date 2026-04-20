@@ -1,0 +1,215 @@
+/* =========================================
+    HOJA RESUMEN SQL (EXPLICATIVA)
+   ========================================= */
+
+-- 🔹 ALTER TABLE
+-- Sirve para modificar una tabla ya existente
+-- Ej: agregar columnas nuevas o cambiar estructura
+
+alter table pedidos 
+add column total_valor decimal(12,2); 
+-- ➜ agrega una columna donde guardar el valor total del pedido
+
+
+-- 🔹 UPDATE con JOIN
+-- Permite actualizar una tabla usando datos de otra
+
+update pedidos p
+join productos pr on p.producto_id = pr.producto_id
+set p.total_valor = p.cantidad * pr.precio;
+-- ➜ calcula el total multiplicando cantidad por precio del producto
+
+
+-- 🔹 INDEX
+-- Sirve para hacer búsquedas más rápidas (como un índice de libro)
+
+create index idx_estado on pedidos(estado);
+-- ➜ acelera consultas por estado (muy usado en filtros)
+
+
+-- 🔹 CREATE TABLE
+-- Crea una nueva tabla en la base de datos
+
+create table log_cambios_estado (...);
+-- ➜ guarda historial de cambios (tipo auditoría)
+
+
+-- 🔹 FOREIGN KEY
+-- Relaciona una tabla con otra (integridad de datos)
+
+foreign key (pedido_id) references pedidos(pedido_id);
+-- ➜ asegura que el pedido exista
+
+
+-- 🔹 VIEW (VISTA)
+-- Es una consulta guardada que se usa como si fuera una tabla
+
+create view vista_log_reciente as
+select ...
+-- ➜ sirve para no repetir consultas complejas
+
+
+-- 🔹 INSERT
+-- Inserta nuevos registros
+
+insert into clientes(...)
+values (...);
+-- ➜ agrega datos nuevos
+
+
+-- 🔹 LAST_INSERT_ID()
+-- Obtiene el último ID insertado automáticamente
+
+values (last_insert_id(), ...);
+-- ➜ útil cuando insertas y luego necesitas ese ID
+
+
+-- 🔹 UPDATE
+-- Modifica datos existentes
+
+update productos
+set stock = stock - 2
+where producto_id = 3;
+-- ➜ cambia el stock después de una compra
+
+
+-- 🔹 SELECT con JOIN
+-- Permite unir varias tablas para consultar datos relacionados
+
+select ...
+from pedidos
+join clientes
+join productos
+-- ➜ muestra información completa (cliente + producto + pedido)
+
+
+-- 🔹 SUBCONSULTA
+-- Consulta dentro de otra consulta
+
+where valor > (select avg(valor) from tabla);
+-- ➜ compara con un valor calculado
+
+
+-- 🔹 SUBCONSULTA CORRELACIONADA
+-- Se ejecuta por cada fila (más avanzada)
+
+where stock < (
+    select avg(stock)
+    from productos
+    where categoria = p.categoria
+);
+-- ➜ compara con el promedio de su misma categoría
+
+
+-- 🔹 DELETE + NOT EXISTS
+-- Elimina registros si NO se cumple una condición en otra tabla
+
+delete from pedidos
+where not exists (...);
+-- ➜ elimina datos “huérfanos” o inválidos
+
+
+-- 🔹 GROUP BY
+-- Agrupa datos para hacer cálculos
+
+group by ciudad;
+-- ➜ permite usar SUM, COUNT, AVG
+
+
+-- 🔹 FUNCIONES DE AGREGACIÓN
+-- Operan sobre grupos de datos
+
+count(*)  -- cuenta
+sum()     -- suma
+avg()     -- promedio
+
+
+-- 🔹 HAVING
+-- Filtra después de agrupar
+
+having count(*) > 1;
+-- ➜ filtra grupos (no filas individuales)
+
+
+-- 🔹 COUNT DISTINCT
+-- Cuenta valores únicos
+
+count(distinct cliente_id);
+-- ➜ evita duplicados
+
+
+-- 🔹 FUNCTION
+-- Crea una función reutilizable
+
+create function ...
+-- ➜ sirve para encapsular lógica y reutilizarla
+
+
+-- 🔹 SELECT INTO
+-- Guarda resultado en una variable
+
+select campo into variable
+-- ➜ se usa dentro de funciones/procedimientos
+
+
+-- 🔹 IF
+-- Permite tomar decisiones
+
+if condicion then
+   ...
+else
+   ...
+end if;
+-- ➜ lógica condicional
+
+
+-- 🔹 CASE
+-- Similar a IF pero con múltiples condiciones
+
+case
+   when condicion then valor
+   else valor
+end
+-- ➜ clasifica datos
+
+
+-- 🔹 PROCEDURE
+-- Bloque de código que ejecuta múltiples operaciones
+
+create procedure ...
+-- ➜ automatiza procesos (insert, update, validaciones)
+
+
+-- 🔹 DATEDIFF
+-- Calcula diferencia entre fechas
+
+datediff(curdate(), fecha);
+-- ➜ útil para saber retrasos
+
+
+-- 🔹 WINDOW FUNCTION
+-- Permite numerar o rankear datos dentro de grupos
+
+row_number() over (
+    partition by cliente_id
+    order by fecha desc
+);
+-- ➜ obtiene por ejemplo “los últimos pedidos por cliente”
+
+
+/* =========================================
+   🚀 IDEA CLAVE PARA EL PARCIAL
+   ========================================= */
+
+-- SQL no es memorizar, es entender:
+
+-- SELECT → ver datos
+-- INSERT → crear datos
+-- UPDATE → modificar datos
+-- DELETE → eliminar datos
+-- JOIN → unir tablas
+-- GROUP BY → agrupar
+-- FUNCTION → reutilizar lógica
+-- PROCEDURE → automatizar procesos
+
+-- Si entiendes esto → pasas el parcial fácil
