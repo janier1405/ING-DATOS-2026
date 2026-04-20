@@ -1,0 +1,206 @@
+/* =========================================
+    HOJA SQL (PARCIAL)
+   ========================================= */
+
+-- 🔹 ALTER TABLE
+alter table pedidos 
+add column total_valor decimal(12,2); 
+--  agrega nueva columna
+
+update pedidos p
+join productos pr on p.producto_id = pr.producto_id
+set p.total_valor = p.cantidad * pr.precio;
+-- calcula total con datos de otra tabla
+
+create index idx_estado on pedidos(estado);
+--  mejora rendimiento de búsquedas
+
+
+-- 🔹 CREATE TABLE + FK
+create table log_cambios_estado (
+    log_id int auto_increment primary key,
+    pedido_id int,
+    estado_anterior varchar(20),
+    estado_nuevo varchar(20),
+    fecha_cambio datetime default now(),
+    foreign key (pedido_id) references pedidos(pedido_id)
+);
+--  tabla relacionada (integridad referencial)
+
+
+-- 🔹 VIEW
+create view vista_log_reciente as
+select *
+from log_cambios_estado
+order by fecha_cambio desc
+limit 10;
+--  guarda consulta reutilizable
+
+
+-- 🔹 INSERT
+insert into clientes(nombre,email,ciudad)
+values ("laura rios","laura@mail.com","manizales");
+-- inserta datos
+
+insert into pedidos(cliente_id, producto_id, cantidad, estado)
+values (last_insert_id(), 3, 2, "pendiente");
+--  usa último id generado
+
+
+-- 🔹 UPDATE
+update productos
+set stock = stock - 2
+where producto_id = 3;
+--  modifica datos
+
+
+-- 🔹 SELECT + JOIN
+select c.nombre, p.nombre, pe.estado
+from pedidos pe
+join clientes c on pe.cliente_id = c.cliente_id
+join productos p on pe.producto_id = p.producto_id
+order by pe.pedido_id desc
+limit 1;
+-- une tablas para consultar info completa
+
+
+-- 🔹 SUBCONSULTA
+select *
+from pedidos
+where cantidad > (select avg(cantidad) from pedidos);
+-- compara con promedio
+
+
+--  SUBCONSULTA CORRELACIONADA
+update productos p
+set precio = precio * 1.08
+where stock < (
+    select avg(stock)
+    from productos
+    where categoria = p.categoria
+);
+--  compara dentro de su mismo grupo
+
+
+-- 🔹 DELETE + NOT EXISTS
+delete from pedidos p
+where estado = "cancelado"
+and not exists (
+    select 1
+    from pedidos p2
+    where p2.cliente_id = p.cliente_id
+    and p2.estado = "entregado"
+);
+-- elimina si no cumple condición en otra tabla
+
+
+-- 🔹 GROUP BY + AGREGACIONES
+select ciudad,
+       count(*) as total,
+       sum(cantidad) as suma,
+       avg(cantidad) as promedio
+from clientes
+group by ciudad;
+--  agrupa datos
+
+
+-- 🔹 HAVING
+select cliente_id, count(*) as pedidos
+from pedidos
+group by cliente_id
+having count(*) > 1;
+--  filtra después de agrupar
+
+
+-- 🔹 COUNT DISTINCT
+select count(distinct cliente_id)
+from pedidos;
+--  cuenta valores únicos
+
+
+-- 🔹 FUNCTION
+delimiter //
+
+create function fn_total(p_id int)
+returns decimal(12,2)
+deterministic
+begin
+    declare total decimal(12,2);
+
+    select sum(cantidad)
+    into total
+    from pedidos
+    where cliente_id = p_id;
+
+    return ifnull(total,0);
+end //
+
+delimiter ;
+--  función reutilizable
+
+
+-- 🔹 IF
+select if(stock > 0, "disponible", "agotado")
+from productos;
+-- ➜condición simple
+
+
+-- 🔹 CASE
+select nombre,
+case
+    when precio > 1000000 then "premium"
+    when precio >= 200000 then "estandar"
+    else "basico"
+end as tipo
+from productos;
+-- ➜ múltiples condiciones
+
+
+--  PROCEDURE
+delimiter //
+
+create procedure sp_test(in p_id int)
+begin
+    declare v int;
+
+    select cliente_id into v
+    from pedidos
+    where pedido_id = p_id;
+
+    if v is null then
+        select "no existe";
+    else
+        select "ok";
+    end if;
+end //
+
+delimiter ;
+--  lógica más compleja
+
+
+-- DATEDIFF
+select datediff(curdate(), fecha_pedido)
+from pedidos;
+-- calcula días de diferencia
+
+
+-- WINDOW FUNCTION
+select nombre,
+row_number() over (
+    partition by cliente_id
+    order by fecha_pedido desc
+) as fila
+from pedidos;
+--  ranking por grupo
+
+
+/* =========================================
+    CLAVE FINAL
+   ========================================= */
+
+-- FROM → tablas
+-- JOIN → unir
+-- WHERE → filtrar
+-- GROUP BY → agrupar
+-- HAVING → filtrar grupos
+-- ORDER BY → ordenar
